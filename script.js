@@ -1,18 +1,9 @@
-const $ = (id) => document.getElementById(id);
-const penaltyCorners = ['top-left','top-center','top-right','bottom-left','bottom-center','bottom-right'];
-const refs = {
-  homeName: $('homeName'), awayName: $('awayName'), homeStrength: $('homeStrength'), awayStrength: $('awayStrength'),
-  homeStrengthValue: $('homeStrengthValue'), awayStrengthValue: $('awayStrengthValue'), homeDisplay: $('homeDisplay'), awayDisplay: $('awayDisplay'), rosterHomeName: $('rosterHomeName'), rosterAwayName: $('rosterAwayName'), rosterHomeCrest: $('rosterHomeCrest'), rosterAwayCrest: $('rosterAwayCrest'),
-  homeCrest: $('homeCrest'), awayCrest: $('awayCrest'), stadium: $('stadium'), weather: $('weather'), stadiumDisplay: $('stadiumDisplay'), weatherDisplay: $('weatherDisplay'),
-  button: $('simulateBtn'), resetButton: $('resetBtn'), buttonText: $('buttonText'), state: $('matchState'), minute: $('minute'), period: $('periodLabel'), progress: $('matchProgress'), homeScore: $('homeScore'), awayScore: $('awayScore'), events: $('eventsList'), eventCount: $('eventCount'), homeStyle: $('homeStyle'), awayStyle: $('awayStyle')
-};
+import { $, refs } from './src/js/core/dom.js';
+import { PENALTY_CORNERS, REAL_HALF_SECONDS, HALF_TIME_PAUSE_MS, formations, playingStyles, formationImpact, squads as configuredSquads, builderState as configuredBuilderState } from './src/js/config/game-config.js';
+import { firstLetter, randomIndex, formatMatchClock } from './src/js/utils/helpers.js';
+const penaltyCorners = PENALTY_CORNERS;
 let simulationId = 0, matchTimer = null, ballTimer = null, statsTimer = null, eventTimers = [], elapsedSeconds = 0, livePlayState = { team: 'home', target: 0, touches: 0 }, liveStats = { shotsHome: 0, shotsAway: 0, cornersHome: 0, cornersAway: 0, possessionHome: 50, redHome: 0, redAway: 0 };
-const REAL_HALF_SECONDS = 30, HALF_TIME_PAUSE_MS = 3000;
-
-function firstLetter(name) { return (name.trim()[0] || '?').toUpperCase(); }
 function syncLiveScoreboard() { $('liveScoreHome').textContent = refs.homeScore.textContent; $('liveScoreAway').textContent = refs.awayScore.textContent; $('liveScoreHomeName').textContent = refs.homeName.value || 'Time da casa'; $('liveScoreAwayName').textContent = refs.awayName.value || 'Time visitante'; }
-function randomIndex(length) { if (length <= 1) return 0; if (window.crypto?.getRandomValues) { const values = new Uint32Array(1); window.crypto.getRandomValues(values); return values[0] % length; } return Math.floor(Math.random() * length); }
-function formatMatchClock(realSeconds) { const matchSeconds = Math.min(90 * 60, Math.round(realSeconds * 90)); return `${String(Math.floor(matchSeconds / 60)).padStart(2, '0')}:${String(matchSeconds % 60).padStart(2, '0')}`; }
 function updateTeamPreview() {
   refs.homeStrengthValue.textContent = refs.homeStrength.value; refs.awayStrengthValue.textContent = refs.awayStrength.value;
   refs.homeDisplay.textContent = refs.homeName.value || 'Time da casa'; refs.awayDisplay.textContent = refs.awayName.value || 'Time visitante';
@@ -23,24 +14,6 @@ function updateTeamPreview() {
   $('liveHomeName').textContent = refs.homeName.value || 'Time da casa'; $('liveAwayName').textContent = refs.awayName.value || 'Time visitante'; $('liveScoreHomeName').textContent = refs.homeName.value || 'Time da casa'; $('liveScoreAwayName').textContent = refs.awayName.value || 'Time visitante';
   refs.stadiumDisplay.textContent = refs.stadium.value; refs.weatherDisplay.textContent = refs.weather.options[refs.weather.selectedIndex].text.replace(/^\S+\s+/, '');
 }
-const formations = {
-  '4-3-3': [[50],[18,39,61,82],[28,50,72],[20,50,80]],
-  '4-4-2': [[50],[18,39,61,82],[15,38,62,85],[33,67]],
-  '3-5-2': [[50],[25,50,75],[12,32,50,68,88],[33,67]],
-  '4-2-3-1': [[50],[18,39,61,82],[35,65],[20,50,80],[50]],
-  '5-3-2': [[50],[12,30,50,70,88],[25,50,75],[33,67]]
-};
-const playingStyles = {
-  defensive: { attack: -0.09, defense: 0.14, possession: -2, shots: 0.78, passes: 4, pressure: 0.55 },
-  attack: { attack: 0.13, defense: -0.06, possession: 2, shots: 1.25, passes: -2, pressure: 1.08 },
-  pressing: { attack: 0.08, defense: 0.03, possession: 4, shots: 1.12, passes: -1, pressure: 1.2 },
-  balanced: { attack: 0, defense: 0, possession: 0, shots: 1, passes: 0, pressure: 0.9 }
-};
-const formationImpact = {
-  '4-3-3': { attack: 0.07, defense: -0.02, shots: 1.12 }, '4-4-2': { attack: 0.02, defense: 0.03, shots: 1.02 },
-  '3-5-2': { attack: 0.04, defense: -0.01, shots: 1.08 }, '4-2-3-1': { attack: 0.03, defense: 0.06, shots: 1.03 },
-  '5-3-2': { attack: -0.05, defense: 0.11, shots: 0.9 }
-};
 function renderFormation(pitchId, rosterSelector, formation, reverse = false) {
   const pitch = $(pitchId); pitch.querySelectorAll('.player-token').forEach(token => token.remove());
   const players = [...document.querySelectorAll(`${rosterSelector} .players-list input`)].slice(0, 11);
@@ -62,11 +35,8 @@ function updateFormations() {
 ['homeFormation','awayFormation'].forEach(id => $(id).addEventListener('change', updateFormations));
 document.querySelectorAll('.player-row input').forEach(input => input.addEventListener('input', updateFormations));
 
-const squads = {
-  home: ['Rafael Costa','Lucas Mendes','André Silva','Bruno Reis','Caio Lima','João Pedro','Matheus Alves','Gabriel Souza','Diego Rocha','Henrique Dias','Vitor Hugo','Pedro Nunes','Igor Martins','Ruan Oliveira','Felipe Santos','Marcos Vinícius','Arthur Lima','Daniel Alves','Guilherme Rocha','Luan Ribeiro','Murilo Santos','Renato Dias','César Augusto'].map((name, index) => ({ name, pos: ['GOL','LD','ZAG','ZAG','LE','VOL','MC','MEI','PD','ATA','PE','GOL','DEF','MEI','ATA','ATA','DEF','VOL','MEI','ATA','DEF','MEI','ATA'][index] })),
-  away: ['Thiago Ramos','Renan Souza','Arthur Melo','Davi Ferreira','Leandro Gomes','Rafael Nóbrega','Eduardo Lima','Nicolas Dias','Wesley Castro','Gustavo Reis','Alex Santana','Murilo Lopes','Danilo Reis','Henrique Lima','João Vitor','Samuel Costa','Paulo Mendes','Fábio Costa','Diego Martins','Caio Rocha','Vitor Reis','Léo Santos','Breno Alves'].map((name, index) => ({ name, pos: ['GOL','LD','ZAG','ZAG','LE','VOL','MC','MEI','PD','ATA','PE','GOL','DEF','MEI','ATA','ATA','DEF','VOL','MEI','ATA','DEF','MEI','ATA'][index] }))
-};
-const builderState = { home: { formation: '4-3-3', slots: [...Array(11).keys()], bench: [11,12,13,14,15,16,17,18,19], nonrelated: [20,21,22] }, away: { formation: '4-4-2', slots: [...Array(11).keys()], bench: [11,12,13,14,15,16,17,18,19], nonrelated: [20,21,22] } };
+const squads = configuredSquads;
+const builderState = configuredBuilderState;
 function builderPositionRows(team) {
   const state = builderState[team], rows = formations[state.formation] || formations['4-3-3'], pitch = $(team === 'home' ? 'builderHomePitch' : 'builderAwayPitch');
   pitch.innerHTML = '<span class="builder-halfway"></span><span class="builder-circle"></span><span class="builder-box top-builder-box"></span><span class="builder-box bottom-builder-box"></span>';
@@ -251,7 +221,7 @@ function ensureLobbyBrowser() {
   const passwordField = document.createElement('div'); passwordField.id = 'lobbyPasswordField'; passwordField.style.display = 'none'; passwordField.innerHTML = '<label for="lobbyPasswordInput">Senha</label><input id="lobbyPasswordInput" type="password" maxlength="24" placeholder="Defina uma senha">'; document.querySelector('.lobby-create-fields').appendChild(passwordField);
   $('createdLobby')?.remove();
   const storageKey = 'simuladorfut:available-lobbies';
-  const apiBase = window.location.protocol === 'http:' ? '' : 'http://localhost:3010';
+  const apiBase = window.location.protocol === 'file:' ? 'http://localhost:3010' : '';
   const syncFromServer = async () => { try { const response = await fetch(`${apiBase}/api/lobbies`); if (!response.ok) return false; const data = await response.json(); saveLobbies(data.lobbies || []); return true; } catch { return false; } };
   const serverRequest = async (url, options) => { try { const response = await fetch(`${apiBase}${url}`, { headers: { 'Content-Type': 'application/json' }, ...options }); const data = await response.json(); return response.ok ? data : null; } catch { return null; } };
   const readLobbies = () => { try { const parsed = JSON.parse(localStorage.getItem(storageKey) || '[]'); return parsed.filter(item => item && item.code && Date.now() - Number(item.createdAt || 0) < 7200000).map(item => ({ ...item, name: item.name || 'Partida amistosa', visibility: item.visibility === 'private' ? 'private' : 'public', password: item.password || '', maxPlayers: Math.max(2, Math.min(20, Number(item.maxPlayers) || 10)), players: Math.max(1, Math.min(Number(item.maxPlayers) || 10, Number(item.players) || 1)) })); } catch { return []; } };
@@ -284,7 +254,7 @@ function ensureLobbyBrowser() {
     document.body.appendChild(modal);
     copyCodeButton.addEventListener('click', async () => { try { await navigator.clipboard.writeText($('onlineRoomCode').textContent); copyCodeButton.textContent = 'Código copiado'; setTimeout(() => copyCodeButton.textContent = 'Copiar código', 1400); } catch { setStatus('Copie o código exibido manualmente.', true); } });
     const teams = ['Atl\u00e9tico-MG','Bahia','Botafogo','Bragantino','Cear\u00e1','Corinthians','Cruzeiro','Flamengo','Fluminense','Fortaleza','Gr\u00eamio','Internacional','Juventude','Mirassol','Palmeiras','Santos','S\u00e3o Paulo','Sport','Vasco','Vit\u00f3ria']; teams.forEach(team => { const option = document.createElement('option'); option.value = team; option.textContent = team; $('onlinePlayerTeam').appendChild(option); });
-   const apiBase = window.location.protocol === 'http:' ? '' : 'http://localhost:3010'; let roomCode = '', roomRole = 'player', roomPassword = '', playerId = localStorage.getItem('simuladorfut:player-id') || (window.crypto?.randomUUID ? window.crypto.randomUUID() : `player-${Date.now()}`); localStorage.setItem('simuladorfut:player-id', playerId); let poll;
+   const apiBase = window.location.protocol === 'file:' ? 'http://localhost:3010' : ''; let roomCode = '', roomRole = 'player', roomPassword = '', playerId = localStorage.getItem('simuladorfut:player-id') || (window.crypto?.randomUUID ? window.crypto.randomUUID() : `player-${Date.now()}`); localStorage.setItem('simuladorfut:player-id', playerId); let poll;
    const request = async (url, options = {}) => { try { const response = await fetch(`${apiBase}${url}`, { headers: { 'Content-Type': 'application/json' }, ...options }); const data = await response.json(); return response.ok ? data : { error: data.error || 'Não foi possível concluir a operação.' }; } catch { return { error: 'Servidor online indisponível. Inicie npm start.' }; } };
    const setStatus = (message, error = false) => { $('onlineRoomStatus').textContent = message; $('onlineRoomStatus').classList.toggle('error', error); };
     const refreshRoomMeta = async () => { if (!modal.classList.contains('is-open') || !roomCode) return; const data = await request(`/api/lobbies/${roomCode}`); if (data.error || !data.lobby) return; const lobby = data.lobby; $('onlineRoomMeta').textContent = `${lobby.players} / ${lobby.maxPlayers} jogadores`; const usedTeams = (lobby.playerList || []).filter(item => item.playerId !== playerId).map(item => item.team).filter(Boolean); [...$('onlinePlayerTeam').options].forEach(option => { option.disabled = usedTeams.includes(option.value); }); };
