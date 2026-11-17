@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Simulador de partidas de futebol entre dois times" />
+    <title>Simulador de Futebol</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="Início do Simulador de Futebol">
+          <span class="brand-mark">⚽</span>
+          <span>Simulador<span class="brand-accent">Fut</span></span>
+        </a>
+        <div class="topbar-status"><span class="status-dot"></span> Motor de simulação online</div>
+      </header>
+
+      <main id="top" class="content">
+        <section class="hero">
+          <div>
+            <p class="eyebrow">CENTRAL DE PARTIDAS</p>
+            <h1>Simule o jogo.<br /><em>Viva a emoção.</em></h1>
+            <p class="hero-copy">Monte o confronto entre dois times e acompanhe cada lance como se estivesse no estádio.</p>
+          </div>
+          <div class="hero-ball" aria-hidden="true">⚽</div>
+        </section>
+
+        <section class="match-layout" aria-label="Simulação da partida">
+          <div class="match-card">
+            <div class="card-heading">
+              <div>
+                <span class="section-kicker">NOVA PARTIDA</span>
+                <h2>Configure o confronto</h2>
+              </div>
+              <span class="match-badge">AMISTOSO</span>
+            </div>
+
+            <div class="team-grid">
+              <label class="team-field team-home">
+                <span class="field-label">TIME DA CASA</span>
+                <span class="input-wrap"><span class="mini-crest home-crest">C</span><input id="homeName" value="City FC" maxlength="22" /></span>
+                <span class="field-hint">Força do time: <strong id="homeStrengthValue">78</strong></span>
+                <input id="homeStrength" class="range home-range" type="range" min="40" max="99" value="78" />
+              </label>
+
+              <div class="versus" aria-hidden="true"><span>VS</span></div>
+
+              <label class="team-field team-away">
+                <span class="field-label">TIME VISITANTE</span>
+                <span class="input-wrap"><span class="mini-crest away-crest">R</span><input id="awayName" value="Rivais FC" maxlength="22" /></span>
+                <span class="field-hint">Força do time: <strong id="awayStrengthValue">74</strong></span>
+                <input id="awayStrength" class="range away-range" type="range" min="40" max="99" value="74" />
+              </label>
+            </div>
+
+            <div class="settings-row">
+              <label><span>ESTÁDIO</span><select id="stadium"><option>Estádio Central</option><option>Arena Municipal</option><option>Campo da Liga</option></select></label>
+              <label><span>CLIMA</span><select id="weather"><option value="normal">☀️  Ensolarado</option><option value="rain">🌧️  Chuva leve</option><option value="night">🌙  Noite estrelada</option></select></label>
+            </div>
+
+            <div class="action-buttons">
+              <button class="simulate-btn" id="simulateBtn"><span class="play-icon">▶</span><span id="buttonText">Iniciar simulação</span></button>
+              <button class="reset-btn" id="resetBtn" type="button"><span>↺</span> Reiniciar partida</button>
+            </div>
+            <p class="tiny-note">A partida dura 1 minuto: 30 segundos em cada tempo.</p>
+          </div>
+
+          <aside class="score-card" aria-live="polite">
+            <div class="score-card-top"><span class="live-label"><span class="live-dot"></span><span id="matchState">PRÉ-JOGO</span></span><span id="minute">—</span></div>
+            <div class="score-teams">
+              <div class="score-team"><div class="large-crest home-crest" id="homeCrest">C</div><strong id="homeDisplay">City FC</strong><small>CASA</small></div>
+              <div class="score-center"><div class="score"><span id="homeScore">0</span><span class="score-separator">:</span><span id="awayScore">0</span></div><div class="halftime" id="periodLabel">Aguardando partida</div></div>
+              <div class="score-team"><div class="large-crest away-crest" id="awayCrest">R</div><strong id="awayDisplay">Rivais FC</strong><small>FORA</small></div>
+            </div>
+            <div class="progress-track"><span id="matchProgress"></span></div>
+            <div class="score-footer"><span id="stadiumDisplay">Estádio Central</span><span>•</span><span id="weatherDisplay">Ensolarado</span></div>
+          </aside>
+        </section>
+
+        <section class="lineup-builder-section" aria-label="Escalação pré-jogo">
+          <div class="rosters-heading"><div><span class="section-kicker">ESCALAÇÃO PRÉ-JOGO</span><h2>Monte os 11 titulares</h2></div><span class="rosters-note">Arraste do elenco para o campo</span></div>
+          <div class="builder-grid">
+            <article class="builder-card"><div class="builder-card-head"><div><span class="mini-crest home-crest">C</span><div><h3 id="builderHomeName">City FC</h3><small>ELENCO COM 23 JOGADORES</small></div></div><label>FORMAÇÃO<select id="builderHomeFormation"><option value="4-3-3">4-3-3</option><option value="4-4-2">4-4-2</option><option value="3-5-2">3-5-2</option><option value="4-2-3-1">4-2-3-1</option><option value="5-3-2">5-3-2</option></select></label></div><div class="builder-body"><div class="builder-pitch" id="builderHomePitch"></div><div class="squad-column"><div class="squad-title"><span>ELENCO</span><small>Arraste um jogador</small></div><div class="squad-list" id="homeSquadList"></div><div class="bench-drop" id="homeBenchDrop"><div><span>BANCO DE RESERVAS</span><small id="homeBenchCount">9 jogadores</small></div><div class="bench-list-builder" id="homeBenchList"></div></div><div class="not-related-drop" id="homeNonrelatedDrop"><div><span>NÃO RELACIONADOS</span><small id="homeNonrelatedCount">3 jogadores</small></div><div class="bench-list-builder" id="homeNonrelatedList"></div></div></div></div></article>
+            <article class="builder-card"><div class="builder-card-head"><div><span class="mini-crest away-crest">R</span><div><h3 id="builderAwayName">Rivais FC</h3><small>ELENCO COM 23 JOGADORES</small></div></div><label>FORMAÇÃO<select id="builderAwayFormation"><option value="4-4-2">4-4-2</option><option value="4-3-3">4-3-3</option><option value="3-5-2">3-5-2</option><option value="4-2-3-1">4-2-3-1</option><option value="5-3-2">5-3-2</option></select></label></div><div class="builder-body"><div class="builder-pitch away-pitch" id="builderAwayPitch"></div><div class="squad-column"><div class="squad-title"><span>ELENCO</span><small>Arraste um jogador</small></div><div class="squad-list" id="awaySquadList"></div><div class="bench-drop" id="awayBenchDrop"><div><span>BANCO DE RESERVAS</span><small id="awayBenchCount">9 jogadores</small></div><div class="bench-list-builder" id="awayBenchList"></div></div><div class="not-related-drop" id="awayNonrelatedDrop"><div><span>NÃO RELACIONADOS</span><small id="awayNonrelatedCount">3 jogadores</small></div><div class="bench-list-builder" id="awayNonrelatedList"></div></div></div></div></article>
+          </div>
+        </section>
+
+        <section class="rosters-section" aria-label="Escalações dos times">
+          <div class="rosters-heading"><div><span class="section-kicker">ELENCOS</span><h2>Escalações da partida</h2></div><span class="rosters-note">11 titulares + banco de reservas</span></div>
+          <div class="rosters-grid">
+            <article class="roster-card home-roster">
+              <div class="roster-team-heading"><div class="mini-crest home-crest" id="rosterHomeCrest">C</div><div><h3 id="rosterHomeName">City FC</h3><span>TIME DA CASA</span></div></div>
+              <div class="lineup-label"><span>TITULARES</span><span>POS</span></div>
+              <div class="players-list">
+                <label class="player-row"><b>1</b><input value="Rafael Costa" /><span>GOL</span></label><label class="player-row"><b>2</b><input value="Lucas Mendes" /><span>LD</span></label><label class="player-row"><b>3</b><input value="André Silva" /><span>ZAG</span></label><label class="player-row"><b>4</b><input value="Bruno Reis" /><span>ZAG</span></label><label class="player-row"><b>6</b><input value="Caio Lima" /><span>LE</span></label><label class="player-row"><b>5</b><input value="João Pedro" /><span>VOL</span></label><label class="player-row"><b>8</b><input value="Matheus Alves" /><span>MC</span></label><label class="player-row"><b>10</b><input value="Gabriel Souza" /><span>MEI</span></label><label class="player-row"><b>7</b><input value="Diego Rocha" /><span>PD</span></label><label class="player-row"><b>9</b><input value="Henrique Dias" /><span>ATA</span></label><label class="player-row"><b>11</b><input value="Vitor Hugo" /><span>PE</span></label>
+              </div>
+              <div class="bench-heading"><span>BANCO DE RESERVAS</span><span>POS</span></div>
+              <div class="bench-list"><label class="player-row"><b>12</b><input value="Pedro Nunes" /><span>GOL</span></label><label class="player-row"><b>13</b><input value="Igor Martins" /><span>DEF</span></label><label class="player-row"><b>14</b><input value="Ruan Oliveira" /><span>MEI</span></label><label class="player-row"><b>15</b><input value="Felipe Santos" /><span>ATA</span></label><label class="player-row"><b>16</b><input value="Marcos Vinícius" /><span>ATA</span></label></div>
+            </article>
+            <article class="roster-card away-roster">
+              <div class="roster-team-heading"><div class="mini-crest away-crest" id="rosterAwayCrest">R</div><div><h3 id="rosterAwayName">Rivais FC</h3><span>TIME VISITANTE</span></div></div>
+              <div class="lineup-label"><span>TITULARES</span><span>POS</span></div>
+              <div class="players-list">
+                <label class="player-row"><b>1</b><input value="Thiago Ramos" /><span>GOL</span></label><label class="player-row"><b>2</b><input value="Renan Souza" /><span>LD</span></label><label class="player-row"><b>3</b><input value="Arthur Melo" /><span>ZAG</span></label><label class="player-row"><b>4</b><input value="Davi Ferreira" /><span>ZAG</span></label><label class="player-row"><b>6</b><input value="Leandro Gomes" /><span>LE</span></label><label class="player-row"><b>5</b><input value="Rafael Nóbrega" /><span>VOL</span></label><label class="player-row"><b>8</b><input value="Eduardo Lima" /><span>MC</span></label><label class="player-row"><b>10</b><input value="Nicolas Dias" /><span>MEI</span></label><label class="player-row"><b>7</b><input value="Wesley Castro" /><span>PD</span></label><label class="player-row"><b>9</b><input value="Gustavo Reis" /><span>ATA</span></label><label class="player-row"><b>11</b><input value="Alex Santana" /><span>PE</span></label>
+              </div>
+              <div class="bench-heading"><span>BANCO DE RESERVAS</span><span>POS</span></div>
+              <div class="bench-list"><label class="player-row"><b>12</b><input value="Murilo Lopes" /><span>GOL</span></label><label class="player-row"><b>13</b><input value="Danilo Reis" /><span>DEF</span></label><label class="player-row"><b>14</b><input value="Henrique Lima" /><span>MEI</span></label><label class="player-row"><b>15</b><input value="João Vitor" /><span>ATA</span></label><label class="player-row"><b>16</b><input value="Samuel Costa" /><span>ATA</span></label></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="formation-section" aria-label="Formações táticas">
+          <div class="rosters-heading"><div><span class="section-kicker">TÁTICA</span><h2>Formação em campo</h2></div><span class="rosters-note">Altere a estratégia antes de iniciar</span></div>
+          <div class="formation-grid">
+            <article class="formation-card">
+              <div class="formation-card-heading"><div><span class="mini-crest home-crest" id="formationHomeCrest">C</span><div><h3 id="formationHomeName">City FC</h3><small>TIME DA CASA</small></div></div><div class="formation-controls"><label>FORMAÇÃO<select id="homeFormation"><option value="4-3-3">4-3-3 ofensivo</option><option value="4-4-2">4-4-2 clássico</option><option value="3-5-2">3-5-2 equilibrado</option><option value="4-2-3-1">4-2-3-1 compacto</option><option value="5-3-2">5-3-2 defensivo</option></select></label><label>ESTILO<select id="homeStyle"><option value="balanced">Equilibrado</option><option value="defensive">Defensivo</option><option value="attack">Ataque</option><option value="pressing">Pressão alta</option></select></label><label>MARCAÇÃO<select id="homeMarking"><option value="light">Leve</option><option value="medium" selected>Média</option><option value="heavy">Pesada</option></select></label><label>ATAQUE<select id="homeAttackPriority"><option value="wings">Pelos lados</option><option value="middle">Pelo meio</option></select></label></div></div>
+              <div class="pitch" id="homePitch"><span class="pitch-line halfway"></span><span class="pitch-circle"></span><span class="pitch-box top-box"></span><span class="pitch-box bottom-box"></span></div>
+            </article>
+            <article class="formation-card">
+              <div class="formation-card-heading"><div><span class="mini-crest away-crest" id="formationAwayCrest">R</span><div><h3 id="formationAwayName">Rivais FC</h3><small>TIME VISITANTE</small></div></div><div class="formation-controls"><label>FORMAÇÃO<select id="awayFormation"><option value="4-4-2">4-4-2 clássico</option><option value="4-3-3">4-3-3 ofensivo</option><option value="3-5-2">3-5-2 equilibrado</option><option value="4-2-3-1">4-2-3-1 compacto</option><option value="5-3-2">5-3-2 defensivo</option></select></label><label>ESTILO<select id="awayStyle"><option value="balanced">Equilibrado</option><option value="defensive">Defensivo</option><option value="attack">Ataque</option><option value="pressing">Pressão alta</option></select></label><label>MARCAÇÃO<select id="awayMarking"><option value="light">Leve</option><option value="medium" selected>Média</option><option value="heavy">Pesada</option></select></label><label>ATAQUE<select id="awayAttackPriority"><option value="wings">Pelos lados</option><option value="middle">Pelo meio</option></select></label></div></div>
+              <div class="pitch away-pitch" id="awayPitch"><span class="pitch-line halfway"></span><span class="pitch-circle"></span><span class="pitch-box top-box"></span><span class="pitch-box bottom-box"></span></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="live-match-section" aria-label="Campo ao vivo">
+          <div class="rosters-heading"><div><span class="section-kicker">PARTIDA AO VIVO</span><h2>Campo em tempo real</h2></div><span class="rosters-note" id="liveMatchHint">A partida ainda não começou</span></div>
+          <div class="live-match-card"><div class="live-match-top"><span><i class="live-dot"></i><strong id="liveMatchState">PRÉ-JOGO</strong></span><strong id="liveClock">00:00</strong><span>1º tempo: 30s · 2º tempo: 30s</span></div><div class="live-pitch" id="livePitch"><span class="live-halfway"></span><span class="live-circle"></span><span class="live-box live-top-box"></span><span class="live-box live-bottom-box"></span><div class="live-scoreboard"><span id="liveScoreHomeName">City FC</span><b><strong id="liveScoreHome">0</strong><i>:</i><strong id="liveScoreAway">0</strong></b><span id="liveScoreAwayName">Rivais FC</span></div><span class="live-ball" id="liveBall">⚽</span></div><div class="live-match-bottom"><span id="liveHomeName">City FC</span><span>⚽ Finalização · 🧤 Defesa do goleiro · 🟨 Cartão · 🟥 Expulsão</span><span id="liveAwayName">Rivais FC</span></div></div>
+        </section>
+
+        <div class="penalty-modal" id="penaltyModal" aria-hidden="true">
+          <div class="penalty-dialog" role="dialog" aria-modal="true" aria-labelledby="penaltyTitle">
+            <span class="section-kicker">DECISÃO DA COBRANÇA</span>
+            <h2 id="penaltyTitle">Pênalti!</h2>
+            <p id="penaltyDescription">Escolha o canto do chute.</p>
+            <div class="penalty-goal" id="penaltyGoal">
+              <span class="goal-net"></span><span class="goal-post post-left"></span><span class="goal-post post-right"></span><span class="goal-post post-top"></span>
+              <span class="penalty-ball" id="penaltyBall">⚽</span><span class="penalty-glove" id="penaltyGlove">🧤</span>
+              <div class="penalty-grid" id="penaltyGrid">
+                <button type="button" data-corner="top-left">↖<small>Alto esquerdo</small></button><button type="button" data-corner="top-center">↑<small>Alto centro</small></button><button type="button" data-corner="top-right">↗<small>Alto direito</small></button>
+                <button type="button" data-corner="bottom-left">↙<small>Baixo esquerdo</small></button><button type="button" data-corner="bottom-center">↓<small>Baixo centro</small></button><button type="button" data-corner="bottom-right">↘<small>Baixo direito</small></button>
+              </div>
+            </div>
+            <div class="penalty-result" id="penaltyResult"></div>
+          </div>
+        </div>
+
+        <section class="dashboard-grid">
+          <div class="events-card">
+            <div class="card-heading compact"><div><span class="section-kicker">NARRAÇÃO AO VIVO</span><h2>Momentos da partida</h2></div><span class="event-count" id="eventCount">0 eventos</span></div>
+            <div class="events-list" id="eventsList"><div class="empty-state"><span>◷</span><p>Os melhores momentos aparecerão aqui.</p><small>Inicie a simulação para acompanhar a partida.</small></div></div>
+          </div>
+          <div class="stats-card">
+            <div class="card-heading compact"><div><span class="section-kicker">DESEMPENHO</span><h2>Estatísticas</h2></div></div>
+            <div class="stats-list">
+              <div class="stat-row"><div class="stat-value" id="posHome">50%</div><div class="stat-label">Posse de bola</div><div class="stat-value right" id="posAway">50%</div><div class="stat-bars"><span id="posBarHome" style="width:50%"></span><span id="posBarAway" style="width:50%"></span></div></div>
+              <div class="stat-row"><div class="stat-value" id="shotsHome">0</div><div class="stat-label">Finalizações</div><div class="stat-value right" id="shotsAway">0</div><div class="stat-bars"><span id="shotsBarHome" style="width:50%"></span><span id="shotsBarAway" style="width:50%"></span></div></div>
+              <div class="stat-row"><div class="stat-value" id="cornersHome">0</div><div class="stat-label">Escanteios</div><div class="stat-value right" id="cornersAway">0</div><div class="stat-bars"><span id="cornersBarHome" style="width:50%"></span><span id="cornersBarAway" style="width:50%"></span></div></div>
+              <div class="stat-row"><div class="stat-value" id="passesHome">0%</div><div class="stat-label">Passes certos</div><div class="stat-value right" id="passesAway">0%</div><div class="stat-bars"><span id="passesBarHome" style="width:50%"></span><span id="passesBarAway" style="width:50%"></span></div></div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer class="footer"><span>SIMULADORFUT © 2024</span><span>Feito para quem ama futebol <span class="footer-ball">⚽</span></span></footer>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
